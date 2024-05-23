@@ -6,7 +6,7 @@ export interface User extends Document {
   password: string;
   isVerifyed: boolean;
   isAcceptingMessage: boolean;
-  verifyOTP: number;
+  verifyOTP: string;
   verifyOtpExpiry: Date;
 }
 
@@ -38,7 +38,7 @@ const userSchema: Schema<User> = new Schema<User>({
     default: true,
   },
   verifyOTP: {
-    type: Number,
+    type: String,
     required: true,
   },
   verifyOtpExpiry: {

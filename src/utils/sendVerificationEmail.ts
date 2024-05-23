@@ -7,13 +7,13 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export async function sendVerificationEmail(
   email: string,
   username: string,
-  otp: number
+  otp: string
 ): Promise<ApiResponse> {
   try {
     await resend.emails.send({
       from: "feedback <onboarding@resend.dev>",
       to: email,
-      subject: "FeedBack | Verification Otp",
+      subject: "Verification Otp",
       text: "",
       react: EmailTemplate({ username, otp }),
     });

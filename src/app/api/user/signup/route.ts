@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     // existing user (verified || unverified) by email
     const existingUserByEmail = await User.findOne({ email });
 
-    const otp = Math.floor(100000 + Math.random() * 900000);
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
         return Response.json(
           {
             success: false,
-            message: "User already exist with this user",
+            message: "User already exist with this email",
           },
           { status: 400 }
         );

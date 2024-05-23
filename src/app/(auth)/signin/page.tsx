@@ -11,51 +11,46 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { signUpSchema } from "@/schemas/signUpSchema";
+import { signinSchema } from "@/schemas/signinSchema";
+import { setLogin } from "@/store/slice/authSlice";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios, { AxiosError } from "axios";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useDebounceCallback } from "usehooks-ts";
+import { useDispatch } from "react-redux";
 import { z } from "zod";
 
 const page = () => {
-  const [username, setUsername] = useState<string>("");
-  const [usernameMessage, setUsernameMessage] = useState<string>("");
-  const [usernameLoading, setusernameLoadind] = useState<boolean>(false);
   const [submitLoading, setSubmitLoading] = useState<boolean>(false);
+  const dispatch = useDispatch();
 
-  const debouncedUsername = useDebounceCallback(setUsername, 500);
   const { toast } = useToast();
   const router = useRouter();
-  const form = useForm<z.infer<typeof signUpSchema>>({
-    resolver: zodResolver(signUpSchema),
+  const form = useForm<z.infer<typeof signinSchema>>({
+    resolver: zodResolver(signinSchema),
     defaultValues: {
-      username: "",
-      email: "",
+      identifier: "",
       password: "",
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
+  const onSubmit = async (data: z.infer<typeof signinSchema>) => {
     setSubmitLoading(true);
     try {
-      const response = await axios.post<ApiResponse>("/api/user/signup", data);
+      const response = await axios.post<ApiResponse>("/api/user/signin", data);
 
       toast({
         title: "Success",
         description: response.data.message,
       });
-
-      router.replace(`/verify/${username}`);
+      router.push("/");
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
-      console.log(axiosError.response);
       toast({
-        title: "SignUp Failed",
+        title: "Signin Failed",
         description: axiosError.response?.data.message,
         variant: "destructive",
       });
@@ -64,77 +59,24 @@ const page = () => {
     }
   };
 
-  useEffect(() => {
-    (async () => {
-      if (username) {
-        setusernameLoadind(true);
-        try {
-          const response = await axios.get(
-            `/api/user/check-username-unique?username=${username}`
-          );
-          setUsernameMessage(response.data.message);
-        } catch (error) {
-          const axiosError = error as AxiosError<ApiResponse>;
-          setUsernameMessage(
-            axiosError.response?.data.message || "Error checking username"
-          );
-        } finally {
-          setusernameLoadind(false);
-        }
-      }
-    })();
-  }, [username]);
-
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-900">
       <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
         <div className="text-center">
           <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl mb-6">
-            Join Feedback
+            Welcome Back to Feedback
           </h1>
-          <p className="mb-4">Sign up to start your anonymous adventure</p>
+          <p className="mb-4">Sign in to continue your secret conversations</p>
         </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
-              name="username"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Username</FormLabel>
-                  <Input
-                    {...field}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      debouncedUsername(e.target.value);
-                    }}
-                  />
-                  {usernameLoading && <Loader2 className="animate-spin" />}
-                  {!usernameLoading && usernameMessage && (
-                    <p
-                      className={`text-sm ${
-                        usernameMessage === "Username is unique"
-                          ? "text-green-500"
-                          : "text-red-500"
-                      }`}
-                    >
-                      {usernameMessage}
-                    </p>
-                  )}
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              name="email"
+              name="identifier"
               control={form.control}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <Input {...field} name="email" />
-                  <p className="text-gray-500/40 text-sm">
-                    We will send you a verification code
-                  </p>
                   <FormMessage />
                 </FormItem>
               )}
@@ -165,8 +107,8 @@ const page = () => {
         </Form>
         <div className="text-center mt-4">
           <p>
-            Already a member?{" "}
-            <Link href="/signin" className="text-blue-600 hover:text-blue-800">
+            Not a member yet?
+            <Link href="/signup" className="text-blue-600 hover:text-blue-800">
               Sign in
             </Link>
           </p>

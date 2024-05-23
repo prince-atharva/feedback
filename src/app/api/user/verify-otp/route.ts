@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     }
 
     // Check if otp is correct and not expired
-    const isOtpValid = user.verifyOTP === otp;
+    const isOtpValid = user.verifyOTP == otp;
     const isOtpNotExpired = new Date(user.verifyOtpExpiry) > new Date();
 
     if (isOtpValid && isOtpNotExpired) {
